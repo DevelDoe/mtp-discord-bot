@@ -20,27 +20,25 @@ const ws = new WebSocket(process.env.MTP_SERVER);
 
 ws.on("open", () => {
     console.log("🔗 Connected to MTP Alerts");
-
-    // Register with the MTP server
-    ws.send(JSON.stringify({ client_id: "discord-bot" }));
+    ws.send(JSON.stringify({ client_id: "discord-bot" })); // Register with server
 });
 
 ws.on("message", async (data) => {
-    console.log("🔥 RAW WebSocket Data:", data.toString());  
+    console.log("🔥 RAW WebSocket Data:", data.toString());
     try {
         const alert = JSON.parse(data.toString());
         console.log("📢 Received Alert:", alert);
 
         const message = `🚨 **Market Alert**: **${alert.symbol}**\n📊 Change: ${alert.change_percent}%\n💰 Price: $${alert.price}\n📉 Volume: ${alert.volume}\n🕒 Time: ${alert.time}`;
 
-
-        const channel = await client.channels.fetch(channelId);
-        if (channel) {
-            await channel.send(message);
-            console.log(`✅ Sent alert to Discord: ${alert.symbol}`);
-        } else {
-            console.error("❌ Error: Channel not found");
+        const channel = client.channels.cache.get(channelId);
+        if (!channel) {
+            console.error("❌ Channel not found in cache.");
+            return;
         }
+
+        await channel.send(message);
+        console.log(`✅ Sent alert to Discord: ${alert.symbol}`);
     } catch (err) {
         console.error("❌ Error processing alert:", err);
     }
@@ -60,10 +58,7 @@ client.once("ready", async () => {
             return;
         }
 
-        let channel = guild.channels.cache.find(
-            (ch) => ch.name === "mtp-alerts" && ch.type === 0
-        );
-
+        let channel = client.channels.cache.get(channelId);
         if (!channel) {
             console.log("📢 Creating a new channel: #mtp-alerts...");
             channel = await guild.channels.create({
