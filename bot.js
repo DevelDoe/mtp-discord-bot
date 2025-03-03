@@ -35,7 +35,13 @@ ws.on("message", async (data) => {
 
 
 
-ws.on("open", () => console.log("🔗 Connected to MTP Alerts"));
+ws.on("open", () => {
+    console.log("🔗 Connected to MTP Alerts");
+
+    // Register with the MTP server
+    ws.send(JSON.stringify({ client_id: "discord-bot" }));
+});
+
 ws.on("error", (err) => console.error("❌ WebSocket Error:", err));
 ws.on("close", () => console.log("🔴 Disconnected from MTP Alerts"));
 
