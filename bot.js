@@ -66,7 +66,7 @@ client.once("ready", async () => {
                 console.log("📢 Received Alert:", alert);
         
                 // Filter out alerts with change_percent < 1%
-                if (Math.abs(alert.change_percent) < 3) {
+                if (Math.abs(alert.change_percent) < 5) {
                     console.log(`⏩ Skipping alert for ${alert.symbol} (change_percent: ${alert.change_percent}%)`);
                     return;
                 }
@@ -74,7 +74,7 @@ client.once("ready", async () => {
                 // Add direction indicator
                 const directionIndicator = alert.direction === "UP" ? "🟢 (UP)" : "🔴 (DOWN)";
         
-                const message = `# 🚨 **${alert.symbol}** \n📊 **Change**: ${directionIndicator} ${alert.change_percent}%\n💰 **Price**: $${alert.price}\n📉 **Volume**: ${alert.volume}\n🕒 **Time**: ${new Date().toLocaleString()}`;                
+                const message = `# 🚨 **${alert.symbol}** \n📊 **Change**: ${directionIndicator} ${alert.change_percent}%\n💰 **Price**: $${alert.price}\n📉 **Volume**: ${alert.volume}K\n🕒 **Time**: ${new Date().toLocaleString()}`;                
                 
                 const channel = await client.channels.fetch(channelId);
                 await channel.send(message);
