@@ -13,38 +13,7 @@ const client = new Client({
     ]
 });
 const token = process.env.DISCORD_TOKEN;
-const channelId = process.env.DISCORD_CHANNEL_ID;
-
-// WebSocket connection to MTP server
-const ws = new WebSocket(process.env.MTP_SERVER);
-
-ws.on("open", () => {
-    console.log("🔗 Connected to MTP Alerts");
-    ws.send(JSON.stringify({ client_id: "discord-bot" })); // Register with server
-});
-
-ws.on("message", async (data) => {
-    console.log("🔥 RAW WebSocket Data:", data.toString());
-    try {
-        const alert = JSON.parse(data.toString());
-        console.log("📢 Received Alert:", alert);
-
-        const message = `🚨 **Market Alert**: **${alert.symbol}**\n📊 Change: ${alert.change_percent}%\n💰 Price: $${alert.price}\n📉 Volume: ${alert.volume}\n🕒 Time: ${alert.time}`;
-
-        const channel = await client.channels.fetch(channelId).catch(err => {
-            console.error("❌ Failed to fetch channel:", err);
-        });
-        if (!channel) return;
-        await channel.send(message);
-        console.log(`✅ Sent alert to Discord: ${alert.symbol}`);
-        
-    } catch (err) {
-        console.error("❌ Error processing alert:", err);
-    }
-});
-
-ws.on("error", (err) => console.error("❌ WebSocket Error:", err));
-ws.on("close", () => console.log("🔴 Disconnected from MTP Alerts"));
+let channelId = null; // No longer using .env for channel ID
 
 // Start Discord bot
 client.once("ready", async () => {
@@ -57,29 +26,70 @@ client.once("ready", async () => {
             return;
         }
 
-        let channel = client.channels.cache.get(channelId);
+        // Check if the channel exists in the guild
+        let channel = guild.channels.cache.find((ch) => ch.name === "mtp-alerts");
+
         if (!channel) {
             console.log("📢 Creating a new channel: #mtp-alerts...");
             channel = await guild.channels.create({
                 name: "mtp-alerts",
-                type: 0, // 0 = Text channel
+                type: 0, // Text channel
                 permissionOverwrites: [
                     {
-                        id: guild.id, // @everyone role
+                        id: guild.id,
                         allow: ["ViewChannel", "SendMessages", "ReadMessageHistory"],
                     },
                 ],
             });
-
+            channelId = channel.id;
             console.log(`✅ Created channel: #${channel.name}`);
         } else {
+            channelId = channel.id;
             console.log(`✅ Channel already exists: #${channel.name}`);
         }
 
-        await channel.send("✅ Bot is now active and ready to send alerts!");
+        await channel.send("✅ Moms Traders Provider BOT is in active development and not a finished product yet! If you have any thought please email me a develdoe@gmail.com");
         console.log(`📤 Test message sent successfully in #${channel.name}!`);
+
+        // Initialize WebSocket AFTER channel is ready
+        const ws = new WebSocket(process.env.MTP_SERVER);
+
+        ws.on("open", () => {
+            console.log("🔗 Connected to MTP Alerts");
+            ws.send(JSON.stringify({ client_id: "discord-bot" }));
+        });
+
+        ws.on("message", async (data) => {
+            console.log("🔥 RAW WebSocket Data:", data.toString());
+            try {
+                const alert = JSON.parse(data.toString());
+                console.log("📢 Received Alert:", alert);
+        
+                // Filter out alerts with change_percent < 1%
+                if (Math.abs(alert.change_percent) < 3) {
+                    console.log(`⏩ Skipping alert for ${alert.symbol} (change_percent: ${alert.change_percent}%)`);
+                    return;
+                }
+        
+                // Add direction indicator
+                const directionIndicator = alert.direction === "UP" ? "🟢 (UP)" : "🔴 (DOWN)";
+        
+                const message = `# 🚨 **${alert.symbol}** \n📊 **Change**: ${directionIndicator} ${alert.change_percent}%\n💰 **Price**: $${alert.price}\n📉 **Volume**: ${alert.volume}\n🕒 **Time**: ${new Date().toLocaleString()}`;                
+                
+                const channel = await client.channels.fetch(channelId);
+                await channel.send(message);
+                console.log(`✅ Sent alert to Discord: ${alert.symbol}`);
+        
+            } catch (err) {
+                console.error("❌ Error processing alert:", err);
+            }
+        });
+
+        ws.on("error", (err) => console.error("❌ WebSocket Error:", err));
+        ws.on("close", () => console.log("🔴 Disconnected from MTP Alerts"));
+
     } catch (err) {
-        console.error("❌ Error creating or sending message in channel:", err);
+        console.error("❌ Error during setup:", err);
     }
 });
 
