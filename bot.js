@@ -13,6 +13,7 @@ const channelId = process.env.DISCORD_CHANNEL_ID;
 const ws = new WebSocket(process.env.MTP_SERVER);
 
 ws.on("message", async (data) => {
+    console.log("🔥 RAW WebSocket Data:", data);    
     try {
         const alert = JSON.parse(data);
         console.log("📢 Received Alert:", alert);
