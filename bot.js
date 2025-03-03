@@ -13,26 +13,25 @@ const channelId = process.env.DISCORD_CHANNEL_ID;
 const ws = new WebSocket(process.env.MTP_SERVER);
 
 ws.on("message", async (data) => {
-    console.log("🔥 RAW WebSocket Data:", data);    
     try {
         const alert = JSON.parse(data);
         console.log("📢 Received Alert:", alert);
 
-        if (alert.direction === "up" && alert.changePercent > 3) {
-            const message = `🚀 **Market Move Alert**: **${alert.symbol}**\n📈 Price: $${alert.price}\n📊 Change: +${alert.changePercent}%\n🕒 Time: ${alert.time}`;
+        const message = `🚨 **Market Alert**: **${alert.symbol}**\n📊 Change: ${alert.changePercent}%\n💰 Price: $${alert.price}\n📉 Volume: ${alert.volume}\n🕒 Time: ${alert.time}`;
 
-            const channel = await client.channels.fetch(channelId);
-            if (channel) {
-                await channel.send(message);
-                console.log(`✅ Sent alert to Discord: ${alert.symbol}`);
-            } else {
-                console.error("❌ Error: Channel not found");
-            }
+        const channel = await client.channels.fetch(channelId);
+        if (channel) {
+            await channel.send(message);
+            console.log(`✅ Sent alert to Discord: ${alert.symbol}`);
+        } else {
+            console.error("❌ Error: Channel not found");
         }
     } catch (err) {
         console.error("❌ Error processing alert:", err);
     }
 });
+
+
 
 
 ws.on("open", () => console.log("🔗 Connected to MTP Alerts"));
