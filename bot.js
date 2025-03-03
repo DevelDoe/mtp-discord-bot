@@ -31,14 +31,13 @@ ws.on("message", async (data) => {
 
         const message = `🚨 **Market Alert**: **${alert.symbol}**\n📊 Change: ${alert.change_percent}%\n💰 Price: $${alert.price}\n📉 Volume: ${alert.volume}\n🕒 Time: ${alert.time}`;
 
-        const channel = client.channels.cache.get(channelId);
-        if (!channel) {
-            console.error("❌ Channel not found in cache.");
-            return;
-        }
-
+        const channel = await client.channels.fetch(channelId).catch(err => {
+            console.error("❌ Failed to fetch channel:", err);
+        });
+        if (!channel) return;
         await channel.send(message);
         console.log(`✅ Sent alert to Discord: ${alert.symbol}`);
+        
     } catch (err) {
         console.error("❌ Error processing alert:", err);
     }
