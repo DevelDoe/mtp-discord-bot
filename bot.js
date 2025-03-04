@@ -66,7 +66,7 @@ client.once("ready", async () => {
                 console.log("📢 Received Alert:", alert);
         
                 // Filter out alerts with change_percent < 1%
-                if (Math.abs(alert.change_percent) < 1) {
+                if (Math.abs(alert.change_percent) < 3) {
                     console.log(`⏩ Skipping alert for ${alert.symbol} (change_percent: ${alert.change_percent}%)`);
                     return;
                 }
