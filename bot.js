@@ -81,7 +81,7 @@ client.once("ready", async () => {
                 // const directionIndicator = alert.direction === "UP" ? "🟢 (UP)" : "🔴 (DOWN)";
         
                 // const message = `# 🚨 **${alert.symbol}** \n📊 **Change**: ${directionIndicator} ${alert.change_percent}%\n💰 **Price**: $${alert.price}\n📉 **Volume**: ${alert.volume}K\n🕒 **Time**: ${new Date().toLocaleString()}`;                
-                const message = `# 🚨 **${alert.symbol}** \n📊 **Change**:  ${alert.change_percent}%\n💰 **Price**: $${alert.price}\n📉 **Volume**: ${alert.volume}K\n🕒 **Time**: ${new Date().toLocaleString()}`;                
+                const message = `# 🚨 **${alert.symbol}** \n📊 **Change**:  ${alert.change_percent}%\n💰 **Price**: $${alert.price}\n📉 **Volume**: ${formatNumber(alert.volume)}\n🕒 **Time**: ${new Date().toLocaleString()}`;                
                 
                 const channel = await client.channels.fetch(channelId);
                 await channel.send(message);
@@ -100,5 +100,16 @@ client.once("ready", async () => {
         console.error("❌ Error during setup:", err);
     }
 });
+
+function formatNumber(value) {
+    if (value >= 1_000_000_000) {
+        return (value / 1_000_000_000).toFixed(2) + "B"; // Billions
+    } else if (value >= 1_000_000) {
+        return (value / 1_000_000).toFixed(2) + "M"; // Millions
+    } else if (value >= 1_000) {
+        return (value / 1_000).toFixed(2) + "K"; // Thousands
+    }
+    return value.toString(); // Keep as is if less than 1K
+}
 
 client.login(token);
