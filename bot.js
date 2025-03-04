@@ -48,7 +48,7 @@ client.once("ready", async () => {
             console.log(`✅ Channel already exists: #${channel.name}`);
         }
 
-        await channel.send("✅ Moms Traders Provider BOT is in active development and not a finished product yet! If you have any thought please email me a develdoe@gmail.com");
+        await channel.send("✅ Moms Traders Provider BOT is in active development and not a finished product yet! If you have any thought pm me @.dusteye");
         console.log(`📤 Test message sent successfully in #${channel.name}!`);
 
         // Initialize WebSocket AFTER channel is ready
@@ -66,7 +66,7 @@ client.once("ready", async () => {
                 console.log("📢 Received Alert:", alert);
         
                 // Filter out alerts with change_percent < 1%
-                if (Math.abs(alert.change_percent) < 5) {
+                if (Math.abs(alert.change_percent) < 1) {
                     console.log(`⏩ Skipping alert for ${alert.symbol} (change_percent: ${alert.change_percent}%)`);
                     return;
                 }
