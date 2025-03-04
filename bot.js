@@ -65,16 +65,23 @@ client.once("ready", async () => {
                 const alert = JSON.parse(data.toString());
                 console.log("📢 Received Alert:", alert);
         
-                // Filter out alerts with change_percent < 1%
+                // Ignore alerts with direction "DOWN"
+                if (alert.direction === "DOWN") {
+                    console.log(`⏩ Skipping alert for ${alert.symbol} (direction: DOWN)`);
+                    return;
+                }
+        
+                // Filter out alerts with change_percent < 3%
                 if (Math.abs(alert.change_percent) < 3) {
                     console.log(`⏩ Skipping alert for ${alert.symbol} (change_percent: ${alert.change_percent}%)`);
                     return;
                 }
         
                 // Add direction indicator
-                const directionIndicator = alert.direction === "UP" ? "🟢 (UP)" : "🔴 (DOWN)";
+                // const directionIndicator = alert.direction === "UP" ? "🟢 (UP)" : "🔴 (DOWN)";
         
-                const message = `# 🚨 **${alert.symbol}** \n📊 **Change**: ${directionIndicator} ${alert.change_percent}%\n💰 **Price**: $${alert.price}\n📉 **Volume**: ${alert.volume}K\n🕒 **Time**: ${new Date().toLocaleString()}`;                
+                // const message = `# 🚨 **${alert.symbol}** \n📊 **Change**: ${directionIndicator} ${alert.change_percent}%\n💰 **Price**: $${alert.price}\n📉 **Volume**: ${alert.volume}K\n🕒 **Time**: ${new Date().toLocaleString()}`;                
+                const message = `# 🚨 **${alert.symbol}** \n📊 **Change**:  ${alert.change_percent}%\n💰 **Price**: $${alert.price}\n📉 **Volume**: ${alert.volume}K\n🕒 **Time**: ${new Date().toLocaleString()}`;                
                 
                 const channel = await client.channels.fetch(channelId);
                 await channel.send(message);
@@ -84,6 +91,7 @@ client.once("ready", async () => {
                 console.error("❌ Error processing alert:", err);
             }
         });
+        
 
         ws.on("error", (err) => console.error("❌ WebSocket Error:", err));
         ws.on("close", () => console.log("🔴 Disconnected from MTP Alerts"));
